@@ -10,7 +10,7 @@ public class TestPerson {
 	@Test
 	public void testName() {
 		Person person = new Person("Pete");
-		assertEquals(person.getName(), "Pete");
+		assertEquals(person.getName(), "Petes");
 	}
 
 }
