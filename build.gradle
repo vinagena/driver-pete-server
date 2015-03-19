@@ -1,0 +1,46 @@
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.2.2.RELEASE")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+apply plugin: 'spring-boot'
+apply plugin: 'war'
+
+
+repositories {
+    mavenCentral()
+    maven { url "http://repo.spring.io/libs-snapshot" }
+}
+
+dependencies {
+	compile("org.springframework.boot:spring-boot-starter-web")
+
+	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+	compile("org.springframework.boot:spring-boot-starter-security")
+	compile("org.springframework.security:spring-security-openid:3.2.6.RELEASE")
+	compile('org.apache.httpcomponents:httpclient:4.3')
+	compile('com.googlecode.json-simple:json-simple:1.1')
+	compile('org.apache.commons:commons-lang3:3.0')
+
+	// The following line marks embedded tomcat as "provided" so it doesn't
+	// go into WEB-INF/lib but goes to WEB-INF/lib-provided. This resolves the conflict
+	// between external Tomcat (e.g. Beanstalk) and embedded one so that
+	// you can deploy war to the cloud with system server and can run war locally.
+	providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
+    testCompile "junit:junit:4.+"
+}
+
+war {
+    baseName = 'test-gradle-spring'
+    version =  '0.0.7'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.3'
+}
