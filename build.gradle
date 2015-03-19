@@ -41,6 +41,12 @@ war {
     version =  '0.0.7'
 }
 
+test {
+    testLogging {
+        exceptionFormat = 'full'
+    }
+}
+
 task wrapper(type: Wrapper) {
     gradleVersion = '2.3'
 }
