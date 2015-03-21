@@ -27,18 +27,18 @@ import org.springframework.web.client.RestTemplate;
 	"fb.redirect_uri=null"})
 public class TestHelloController {
 
-    @Value("${local.server.port}")
-    private int port;
-
+	@Value("${local.server.port}")
+	private int port;
+	
 	private URL base;
 	private RestTemplate template;
-
+	
 	@Before
 	public void setUp() throws Exception {
 		this.base = new URL("http://localhost:" + port + "/hello");
 		this.template = new TestRestTemplate();
 	}
-
+	
 	@Test
 	public void getHello() throws Exception {
 		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
