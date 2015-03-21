@@ -25,7 +25,7 @@ import org.springframework.web.client.RestTemplate;
 	"fb.client_id=0",
 	"fb.secret=0",
 	"fb.redirect_uri=null"})
-public class TestHelloController {
+public class TestHelloControllerIT {
 
 	@Value("${local.server.port}")
 	private int port;
