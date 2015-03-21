@@ -20,10 +20,11 @@ repositories {
 
 dependencies {
 	compile("org.springframework.boot:spring-boot-starter-web")
+	compile("org.springframework.boot:spring-boot-starter-test")
 
 	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
 	compile("org.springframework.boot:spring-boot-starter-security")
-	compile("org.springframework.security:spring-security-openid:3.2.6.RELEASE")
+
 	compile('org.apache.httpcomponents:httpclient:4.3')
 	compile('com.googlecode.json-simple:json-simple:1.1')
 	compile('org.apache.commons:commons-lang3:3.0')
