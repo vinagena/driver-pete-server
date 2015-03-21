@@ -20,7 +20,11 @@ import org.springframework.web.client.RestTemplate;
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringApplicationConfiguration(classes = Application.class)
 @WebAppConfiguration
-@IntegrationTest({"server.port=0"})
+@IntegrationTest({
+	"server.port=0",
+	"fb.client_id=0",
+	"fb.secret=0",
+	"fb.redirect_uri=null"})
 public class TestHelloController {
 
     @Value("${local.server.port}")
