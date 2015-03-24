@@ -21,8 +21,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest().authenticated()
                 .and()
             .formLogin()
-                .loginPage("/auth/facebook")
-                .permitAll()
+                //.loginPage("/auth/facebook")
+            	//.loginPage("/login")
+                //.permitAll()
                 .and()
             .logout()
                 .permitAll();
@@ -30,7 +31,9 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
     public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-
+    	auth
+        .inMemoryAuthentication()
+            .withUser("user").password("password").roles("USER");
     }
     
 }
