@@ -20,7 +20,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .and()
             .formLogin()
                 .loginPage("/auth/facebook")
-            	.loginPage("/login")
+                // uncomment to enable in memory login form
+            	//.loginPage("/login")
                 .permitAll()
                 .and()
             .logout()
