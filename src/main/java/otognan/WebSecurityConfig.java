@@ -17,15 +17,16 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .antMatchers("/", "/auth/facebook", "/signin/facebook").permitAll()
                 .antMatchers("/hello").permitAll()
                 .anyRequest().authenticated()
-                .and()
-            .formLogin()
-                .loginPage("/auth/facebook")
+            //    .and()
+           // .formLogin()
+                //.loginPage("/auth/facebook")
                 // uncomment to enable in memory login form
             	//.loginPage("/login")
-                .permitAll()
-                .and()
-            .logout()
-                .permitAll();
+                //.permitAll()
+//                .and()
+//            .logout()
+//                .permitAll()
+            ;
     }
 
     @Autowired
