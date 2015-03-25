@@ -24,8 +24,10 @@ dependencies {
 	compile("org.springframework.boot:spring-boot-starter-test")
 
 	compile("org.springframework.boot:spring-boot-starter-thymeleaf")
+
 	compile('org.springframework.security:spring-security-web:4.0.0.CI-SNAPSHOT')
 	compile('org.springframework.security:spring-security-config:4.0.0.CI-SNAPSHOT')
+	compile('org.springframework.security:spring-security-test:4.0.0.CI-SNAPSHOT')
 
 	compile('org.apache.httpcomponents:httpclient:4.3')
 	compile('com.googlecode.json-simple:json-simple:1.1')
