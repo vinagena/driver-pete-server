@@ -31,6 +31,28 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/*
+ * This controller implements login flow using Facebook OAuth2:
+ * 
+ * The flow of events is following:
+ *  - user tries to access a secured resource.
+ *  - spring redirects him to a custom login page /auth/facebook that is specified
+ *   in security config and is implemented by this controller
+ *  - the controller redirects user to a facebook login dialog providing
+ *  	a callback URL that facebook would call on login
+ *  - user enters its credentials for facebook account and authorize the app.
+ *  	From this point communication is happening only between facebook and the server.
+ *  - facebook calls the callback URL providing a "code" to this server
+ *  	(this controller /signin/facebook)
+ *  - the server asks facebook for an access token (getFacebookToken).
+ *  	The server has to pass facebook app id and app secret. App secret is accessible via the properties
+ *  	of the app (e.g. via env. variables or config file)
+ *  - facebook provides an access token for this user.
+ *  - the server uses token to access user identification data such as email
+ *  - the server registers the user by his email in the spring security system.
+ *  - now user is authenticated and can access secured resources.
+ */
+
 @Controller
 public class FacebookSigninController {
 
