@@ -27,6 +27,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 
@@ -51,7 +52,6 @@ public class TestHelloControllerIT {
 	@Before
 	public void setUp() throws Exception {
 		this.base = new URL("https://localhost:" + port + "/hello");
-		this.template = new TestRestTemplate();
 		
 		SSLContextBuilder builder = new SSLContextBuilder();
 	    // trust self signed certificate
@@ -77,9 +77,20 @@ public class TestHelloControllerIT {
 	    });
 	}
 	
+//	@Test
+//	public void getHello() throws Exception {
+//		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
+//		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
+//	}
+	
 	@Test
-	public void getHello() throws Exception {
-		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
-		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
+	public void getHelloToGoogle() throws Exception {
+		//MockRestServiceServer mockServer = MockRestServiceServer.createServer(this.template);
+		
+		String url = new URL("https://localhost:" + port + "/hello_to_google").toString();
+		ResponseEntity<String> response = template.getForEntity(url, String.class);
+		assertThat(response.getBody(), equalTo("Greetings from Spring Boot google!"));
+		
+		//mockServer.verify();
 	}
 }
