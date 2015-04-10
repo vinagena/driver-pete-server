@@ -3,8 +3,8 @@ package otognan;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import java.net.URL;
 import java.net.URI;
+import java.net.URL;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
@@ -22,17 +22,33 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.IntegrationTest;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.boot.test.TestRestTemplate;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestTemplate;
 
 
+@Configuration
+@Order(1)
+class TestWebSecurityConfig extends WebSecurityConfig {
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .authorizeRequests()
+                .antMatchers("/hello_to_google").permitAll();
+        super.configure(http);
+    }
+    
+}
+
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(classes = Application.class)
+@SpringApplicationConfiguration(classes = {Application.class})
 @WebAppConfiguration
 @IntegrationTest({
 	"server.port=8443",
@@ -41,7 +57,10 @@ import org.springframework.web.client.RestTemplate;
 	"fb.client_id=0",
 	"fb.secret=0",
 	"fb.redirect_uri=null"})
+
 public class TestHelloControllerIT {
+	
+
 
 	@Value("${local.server.port}")
 	private int port;
@@ -77,15 +96,18 @@ public class TestHelloControllerIT {
 	    });
 	}
 	
-//	@Test
-//	public void getHello() throws Exception {
-//		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
-//		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
-//	}
+	@Test
+	public void getHello() throws Exception {
+		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
+		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
+	}
 	
 	@Test
 	public void getHelloToGoogle() throws Exception {
 		//MockRestServiceServer mockServer = MockRestServiceServer.createServer(this.template);
+		
+		
+		//https://issuetracker.springsource.com/browse/STS-3882
 		
 		String url = new URL("https://localhost:" + port + "/hello_to_google").toString();
 		ResponseEntity<String> response = template.getForEntity(url, String.class);
@@ -93,4 +115,5 @@ public class TestHelloControllerIT {
 		
 		//mockServer.verify();
 	}
+	
 }
