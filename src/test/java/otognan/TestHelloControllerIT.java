@@ -32,9 +32,18 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.web.client.RestTemplate;
 
-
+/*
+ * Extra security config that opens access to test controller.
+ * Here we extend normal WebSecurityConfig and add allowed url before
+ * the more strict rules defined by WebSecurityConfig because spring
+ * evaluates antMatchers in the order they are declared.
+ * 
+ * It doesn't work to extend WebSecurityConfigurerAdapter instead of 
+ * main config for some reason.
+ * 
+ */
 @Configuration
-@Order(1)
+@Order(1)  // default order of WebSecurityConfig is 100, so this config has a priority
 class TestWebSecurityConfig extends WebSecurityConfig {
     @Override
     protected void configure(HttpSecurity http) throws Exception {
