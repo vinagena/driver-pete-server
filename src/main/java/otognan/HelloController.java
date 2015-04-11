@@ -1,5 +1,7 @@
 package otognan;
 
+import java.security.Principal;
+
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
@@ -12,8 +14,8 @@ public class HelloController {
     }
     
     @RequestMapping("/test_greeting")
-    public String greetings() {
-        return "Greetings!";
+    public String greetings(Principal principal) {
+        return "Greetings " + principal.getName();
     }
 
 }

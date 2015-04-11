@@ -114,8 +114,6 @@ public class TestHelloControllerIT {
 	@Test
 	public void getHelloToGoogle() throws Exception {
 		//MockRestServiceServer mockServer = MockRestServiceServer.createServer(this.template);
-		
-		
 		//https://issuetracker.springsource.com/browse/STS-3882
 		
 		String url = new URL("https://localhost:" + port + "/hello_to_google").toString();

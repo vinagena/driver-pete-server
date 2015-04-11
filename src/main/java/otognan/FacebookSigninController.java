@@ -66,7 +66,7 @@ public class FacebookSigninController {
 
     @Value("${fb.redirect_uri}")
     private String redirectUri;
-
+    
     @RequestMapping("/auth/facebook")
     public String auth() {
         try {
