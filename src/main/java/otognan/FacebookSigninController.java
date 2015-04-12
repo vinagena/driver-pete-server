@@ -21,6 +21,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
@@ -67,6 +68,12 @@ public class FacebookSigninController {
     @Value("${fb.redirect_uri}")
     private String redirectUri;
     
+    @Value("${fb.login_form_host}")
+    private String loginFormHost;
+    
+    @Value("${fb.api_host}")
+    private String apiHost;
+    
     @RequestMapping("/auth/facebook")
     public String auth() {
         try {
@@ -74,7 +81,7 @@ public class FacebookSigninController {
             params.add(new BasicNameValuePair("client_id", clientId));
             params.add(new BasicNameValuePair("redirect_uri", redirectUri));
             params.add(new BasicNameValuePair("scope", "email"));
-            URI uri = buildURI("https", "facebook.com", "/dialog/oauth", params);
+            URI uri = buildURI("https", this.loginFormHost, "/dialog/oauth", params);
             LOGGER.info("Facebook auth invoked: " + uri.toString());
             return "redirect:" + uri.toString();
         } catch (URISyntaxException e) {
@@ -112,7 +119,7 @@ public class FacebookSigninController {
         params.add(new BasicNameValuePair("client_secret", clientSecret));
         params.add(new BasicNameValuePair("code", code));
         // create GET request for get access_token
-        HttpGet httpget = new HttpGet(buildURI("https", "graph.facebook.com", "/oauth/access_token", params));
+        HttpGet httpget = new HttpGet(buildURI("https", this.apiHost, "/oauth/access_token", params));
         HttpResponse response = httpClient.execute(httpget);
         HttpEntity entity = response.getEntity();
         return StringUtils.substringBetween(EntityUtils.toString(entity), "access_token=", "&expires");
@@ -127,7 +134,7 @@ public class FacebookSigninController {
         params.add(new BasicNameValuePair("access_token", token));
         params.add(new BasicNameValuePair("redirect_uri", redirectUri));
         // create GET request for get user info
-        HttpGet httpget = new HttpGet(buildURI("https", "graph.facebook.com", "/me", params));
+        HttpGet httpget = new HttpGet(buildURI("https", this.apiHost, "/me", params));
         HttpResponse response = httpClient.execute(httpget);
         HttpEntity entity = response.getEntity();
         String json = EntityUtils.toString(entity);

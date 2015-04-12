@@ -2,6 +2,7 @@ package otognan;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.net.URI;
 import java.net.URL;
@@ -30,6 +31,7 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 /*
@@ -49,7 +51,7 @@ class TestWebSecurityConfig extends WebSecurityConfig {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                .antMatchers("/hello_to_google").permitAll();
+                .antMatchers("/hello_to_google", "/dialog/oauth").permitAll();
         super.configure(http);
     }
     
@@ -63,16 +65,25 @@ class TestWebSecurityConfig extends WebSecurityConfig {
 	"server.port=8443",
 	"server.ssl.key-store = src/test/resources/test_keystore",
 	"server.ssl.key-store-password = temppwd",
+	"fb.login_form_host = localhost:8443",
+	"fb.api_host = localhost:8443",
 	"fb.client_id=0",
 	"fb.secret=0",
-	"fb.redirect_uri=null"})
-
+	"fb.redirect_uri=https://localhost:8443/signin/facebook"})
 public class TestHelloControllerIT {
-	
-
 
 	@Value("${local.server.port}")
 	private int port;
+	
+	@Value("${fb.login_form_host}")
+	private String loginFromHost;
+	
+	@Value("${fb.api_host}")
+	private String apiHost;
+
+	@Value("${fb.redirect_uri}")
+	private String redirectUri;
+	
 	
 	private URL base;
 	private RestTemplate template;
@@ -105,20 +116,51 @@ public class TestHelloControllerIT {
 	    });
 	}
 	
-	@Test
-	public void getHello() throws Exception {
-		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
-		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
-	}
+//	@Test
+//	public void getHello() throws Exception {
+//		ResponseEntity<String> response = template.getForEntity(base.toString(), String.class);
+//		assertThat(response.getBody(), equalTo("Greetings from Spring Boot!"));
+//	}
+//	
+//	@Test
+//	public void getHelloToGoogle() throws Exception {
+//		//MockRestServiceServer mockServer = MockRestServiceServer.createServer(this.template);
+//		//https://issuetracker.springsource.com/browse/STS-3882
+//		
+//		String url = new URL("https://localhost:" + port + "/hello_to_google").toString();
+//		ResponseEntity<String> response = template.getForEntity(url, String.class);
+//		assertThat(response.getBody(), equalTo("Greetings from Spring Boot google!"));
+//		
+//		//mockServer.verify();
+//	}
 	
 	@Test
-	public void getHelloToGoogle() throws Exception {
+	public void getSecuredGreetings() throws Exception {
 		//MockRestServiceServer mockServer = MockRestServiceServer.createServer(this.template);
 		//https://issuetracker.springsource.com/browse/STS-3882
 		
-		String url = new URL("https://localhost:" + port + "/hello_to_google").toString();
-		ResponseEntity<String> response = template.getForEntity(url, String.class);
-		assertThat(response.getBody(), equalTo("Greetings from Spring Boot google!"));
+		String url = new URL("https://localhost:" + port + "/test_greeting").toString();
+		ResponseEntity<String> initialResponse = template.getForEntity(url, String.class);
+		
+		// Expect redirect to the server login page
+		assertTrue(initialResponse.getStatusCode().is3xxRedirection());
+		URI loginRedirect = initialResponse.getHeaders().getLocation(); 
+		assertThat(loginRedirect.getPath(), equalTo("/auth/facebook"));
+		ResponseEntity<String> springLoginResponse = template.getForEntity(loginRedirect.toString(), String.class);
+		
+		// Expect redirect to the facebook login page 
+		assertTrue(springLoginResponse.getStatusCode().is3xxRedirection());
+		URI facebookLoginRedirect = springLoginResponse.getHeaders().getLocation();
+		assertThat(facebookLoginRedirect.getPath(), equalTo("/dialog/oauth"));
+		
+		// Lets got to login page now
+		System.out.println(facebookLoginRedirect);
+		ResponseEntity<String> facebookLoginResponse = template.getForEntity(facebookLoginRedirect.toString(), String.class);
+		
+		System.out.println(facebookLoginResponse.toString());
+
+		assertThat(facebookLoginResponse.getBody(), equalTo("HY"));
+		//assertThat(initial_response.getBody(), equalTo("Greetings from Spring Boot google!"));
 		
 		//mockServer.verify();
 	}
