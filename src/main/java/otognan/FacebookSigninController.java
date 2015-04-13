@@ -19,6 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Controller;
 import org.springframework.util.Assert;
@@ -74,6 +75,9 @@ public class FacebookSigninController {
     @Value("${fb.api_host}")
     private String apiHost;
     
+    @Value("${fb.use_safe_https}")
+    private boolean useSafeHttps;
+    
     @RequestMapping("/auth/facebook")
     public String auth() {
         try {
@@ -92,13 +96,11 @@ public class FacebookSigninController {
 
     @RequestMapping("/signin/facebook")
     public String signIn(@RequestParam("code") String code) throws Exception {
-        LOGGER.info("facebook signin invoked, code: " + code);
-        String redirect = "redirect:/home";
-        CloseableHttpClient httpClient = HttpClients.createDefault();
+        LOGGER.info("Facebook signin invoked, code: " + code);
+        CloseableHttpClient httpClient = this.createHttpClient();
         try {
             String token = getFacebookToken(httpClient, code);
             getFacebookJSON(httpClient, token);
-            redirect = "redirect:/home";
         }  catch (Exception e) {
             LOGGER.error("Exception: " + e);
         } finally {
@@ -108,8 +110,8 @@ public class FacebookSigninController {
                 LOGGER.error("Exception occurs on httpClient.close()");
             }
         }
-        System.out.println("DONE signing..");
-        return redirect;
+
+        return "home";
     }
 
     private String getFacebookToken(HttpClient httpClient, String code) throws Exception {
@@ -119,26 +121,32 @@ public class FacebookSigninController {
         params.add(new BasicNameValuePair("client_secret", clientSecret));
         params.add(new BasicNameValuePair("code", code));
         // create GET request for get access_token
-        HttpGet httpget = new HttpGet(buildURI("https", this.apiHost, "/oauth/access_token", params));
+        URI tokenURI = buildURI("https", this.apiHost, "/oauth/access_token", params);
+        LOGGER.info("Getting access token from " + tokenURI.toString());
+        HttpGet httpget = new HttpGet(tokenURI);
         HttpResponse response = httpClient.execute(httpget);
         HttpEntity entity = response.getEntity();
-        return StringUtils.substringBetween(EntityUtils.toString(entity), "access_token=", "&expires");
+        String entityString = EntityUtils.toString(entity);
+        LOGGER.info("Call for access token returned: " + entityString);
+        return StringUtils.substringBetween(entityString, "access_token=", "&expires");
     }
 
     private void getFacebookJSON(HttpClient httpClient, String token) throws Exception {
         if (StringUtils.isEmpty(token)) {
             throw new IllegalArgumentException("Facebook access_token empty!");
         }
-        LOGGER.info("access_token=" + token);
+        LOGGER.info("Extracted access_token: " + token);
         List<NameValuePair> params = new ArrayList<NameValuePair>();
         params.add(new BasicNameValuePair("access_token", token));
         params.add(new BasicNameValuePair("redirect_uri", redirectUri));
         // create GET request for get user info
-        HttpGet httpget = new HttpGet(buildURI("https", this.apiHost, "/me", params));
+        URI loginNameURI = buildURI("https", this.apiHost, "/me", params);
+        LOGGER.info("Requesting email from /me " + loginNameURI);
+        HttpGet httpget = new HttpGet(loginNameURI);
         HttpResponse response = httpClient.execute(httpget);
         HttpEntity entity = response.getEntity();
         String json = EntityUtils.toString(entity);
-        LOGGER.info(json);
+        LOGGER.info("/me returned json: " + json);
         JSONObject obj = (JSONObject)JSONValue.parse(json);
         // Auth in spring security
         fakeAuth((String)obj.get("email"));
@@ -149,6 +157,7 @@ public class FacebookSigninController {
         		Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER")));
         org.springframework.security.core.context.SecurityContext sc = new SecurityContextImpl();
         sc.setAuthentication(auth);
+        LOGGER.info("Authenticated with a principal: " + auth.getPrincipal());
         org.springframework.security.core.context.SecurityContextHolder.setContext(sc);
     }
 
@@ -159,5 +168,14 @@ public class FacebookSigninController {
                 .setPath(path)
                 .addParameters(params)
                 .build();
+    }
+    
+    private CloseableHttpClient createHttpClient() throws IOException
+    {
+    	if (this.useSafeHttps) {
+    		return HttpClients.createDefault();
+    	} else {
+    		return HttpsUtils.createUnsafeHttpClient();
+    	}
     }
 }

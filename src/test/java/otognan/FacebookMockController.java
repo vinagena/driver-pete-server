@@ -10,6 +10,10 @@ import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
@@ -22,20 +26,35 @@ import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+
 @RestController
+@RequestMapping("/facebook_mock")
 public class FacebookMockController {
 	
 	private String email;
 	
-    @RequestMapping("/hello_to_google")
-    public String hello_to_google() {
-        return "Greetings from Spring Boot google!";
-    }
-    
+	private int code = 123;
+	private int token = 321;
+	
+	class MeServiceMockResponse {
+		private String email;
+
+		public MeServiceMockResponse(String email) {
+			this.email = email;
+		}
+		
+		public String getEmail() {
+			return this.email;
+		}
+	};
+	
     @RequestMapping("/dialog/oauth")
     public String oauthDialog(
     		@RequestParam("client_id") String id,
@@ -49,59 +68,40 @@ public class FacebookMockController {
     @RequestMapping("/do_login")
     public String doLoging(
     		@RequestParam("redirect_uri") String redirectUri,
-    		@RequestParam("email") String email
-    		)
+    		@RequestParam("email") String email,
+    		HttpServletResponse response
+    		) throws IOException
     {
     	this.email = email;
       
-		URI uri = null;
-		try {
-			uri = URI.create(java.net.URLDecoder.decode(redirectUri, "UTF-8") + "?code=123");
-		} catch (UnsupportedEncodingException e2) {
-			// TODO Auto-generated catch block
-			e2.printStackTrace();
-		}
+		URI uri = URI.create(java.net.URLDecoder.decode(redirectUri, "UTF-8") + "?code=" + this.code);
 		HttpGet httpget = new HttpGet(uri);
-		//CloseableHttpClient httpClient = HttpClients.createDefault();
-		SSLContextBuilder builder = new SSLContextBuilder();
-	    try {
-			builder.loadTrustMaterial(null, new TrustSelfSignedStrategy());
-		} catch (NoSuchAlgorithmException | KeyStoreException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		try {
-			SSLConnectionSocketFactory sslsf = new SSLConnectionSocketFactory(
-			        builder.build(),
-			        SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
-			CloseableHttpClient httpClient = HttpClients.custom().setSSLSocketFactory(
-		            sslsf).build();
-			
-			try {
-				HttpResponse response = httpClient.execute(httpget);
-				HttpEntity entity = response.getEntity();
-				return httpget.toString();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		} catch (KeyManagementException | NoSuchAlgorithmException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	        
-    	return email;
+		CloseableHttpClient httpClient = HttpsUtils.createUnsafeHttpClient();
+		HttpResponse callbackResponse = httpClient.execute(httpget);
+		Assert.isTrue(callbackResponse.getStatusLine().getStatusCode() == 200);
+		String cookie = callbackResponse.getFirstHeader("Set-Cookie").getValue();
+		response.addCookie(new Cookie("Set-Cookie", cookie));
+		return "OK";
     }
     
-    private URI buildURI(String path, List<NameValuePair> params) throws URISyntaxException {
-        return new URIBuilder()
-                .setScheme("https")
-                .setHost("localhost")
-                .setPort(8443)
-                .setPath(path)
-                .addParameters(params)
-                .build();
+    @RequestMapping("/oauth/access_token")
+    public String accessToken(
+    		@RequestParam("client_id") String clientId,
+    		@RequestParam("redirect_uri") String redirectUri,
+    		@RequestParam("client_secret") String clientSecret,
+    		@RequestParam("code") int tokenCode)
+    {
+    	Assert.isTrue(tokenCode == this.code);
+    	return "access_token=" + this.token + "&expires";
     }
     
+    @RequestMapping("/me")
+    public MeServiceMockResponse me(
+    		@RequestParam("access_token") int accessToken,
+    		@RequestParam("redirect_uri") String redirectUri
+    		)
+    {
+    	Assert.isTrue(accessToken == this.token);
+    	return new MeServiceMockResponse(this.email);
+    }
 }

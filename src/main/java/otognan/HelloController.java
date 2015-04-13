@@ -15,7 +15,7 @@ public class HelloController {
     
     @RequestMapping("/test_greeting")
     public String greetings(Principal principal) {
-        return "Greetings " + principal.getName();
+        return "Greetings to " + principal.getName();
     }
 
 }
