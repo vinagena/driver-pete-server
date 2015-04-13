@@ -11,6 +11,7 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.protocol.HttpClientContext;
+import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.conn.ssl.SSLContextBuilder;
 import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
@@ -31,7 +32,6 @@ import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.util.Assert;
 import org.springframework.web.client.RestTemplate;
 
 /*
@@ -51,10 +51,9 @@ class TestWebSecurityConfig extends WebSecurityConfig {
     protected void configure(HttpSecurity http) throws Exception {
         http
             .authorizeRequests()
-                .antMatchers("/hello_to_google", "/dialog/oauth").permitAll();
+                .antMatchers("/hello_to_google", "/dialog/oauth", "/do_login").permitAll();
         super.configure(http);
     }
-    
 }
 
 
@@ -69,7 +68,8 @@ class TestWebSecurityConfig extends WebSecurityConfig {
 	"fb.api_host = localhost:8443",
 	"fb.client_id=0",
 	"fb.secret=0",
-	"fb.redirect_uri=https://localhost:8443/signin/facebook"})
+	"fb.redirect_uri=https://localhost:8443/signin/facebook",
+})
 public class TestHelloControllerIT {
 
 	@Value("${local.server.port}")
@@ -157,9 +157,15 @@ public class TestHelloControllerIT {
 		System.out.println(facebookLoginRedirect);
 		ResponseEntity<String> facebookLoginResponse = template.getForEntity(facebookLoginRedirect.toString(), String.class);
 		
-		System.out.println(facebookLoginResponse.toString());
+		// Here we emulate posting to the login form. We assume that facebook mock 
+		// returned a login link like on a form. We just add login to it and post
+		String email = "testuser@gmail.com";
+		URI loginFormURI = URI.create("https://localhost:8443" + facebookLoginResponse.getBody() + "&email=" + email);
 
-		assertThat(facebookLoginResponse.getBody(), equalTo("HY"));
+		ResponseEntity<String> loginFormResponse = template.getForEntity(loginFormURI.toString(), String.class);
+		System.out.println(loginFormResponse.getBody());
+		//assertThat(facebookLoginResponse.getBody(), equalTo("HY"));
+		
 		//assertThat(initial_response.getBody(), equalTo("Greetings from Spring Boot google!"));
 		
 		//mockServer.verify();
