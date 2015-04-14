@@ -28,18 +28,21 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 @WebAppConfiguration
 public class TestHelloController {
 
-	private MockMvc mvc;
+    private MockMvc mvc;
 
-	@Before
-	public void setUp() throws Exception {
-		mvc = MockMvcBuilders.standaloneSetup(new HelloController()).build();
-	}
+    @Before
+    public void setUp() throws Exception {
+        mvc = MockMvcBuilders.standaloneSetup(new HelloController()).build();
+    }
 
-	@Test
-	public void getHello() throws Exception {
-		mvc.perform(MockMvcRequestBuilders.get("/hello").accept(MediaType.APPLICATION_JSON))
-				.andExpect(status().isOk())
-				.andExpect(content().string(equalTo("Greetings from Spring Boot!")));
-	}
+    @Test
+    public void getHello() throws Exception {
+        mvc.perform(
+                MockMvcRequestBuilders.get("/hello").accept(
+                        MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(
+                        content()
+                                .string(equalTo("Greetings from Spring Boot!")));
+    }
 }
-
