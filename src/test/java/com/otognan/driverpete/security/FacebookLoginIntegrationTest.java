@@ -46,7 +46,7 @@ public class FacebookLoginIntegrationTest {
     @Before
     public void setUp() throws Exception {
         this.template = new TestRestTemplate();
-        this.basePath = "http://localhost:8080/";
+        this.basePath = "https://localhost:8443/";
     }
 
     @Test
