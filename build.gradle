@@ -49,7 +49,7 @@ dependencies {
 
 
 	testCompile('org.apache.httpcomponents:httpclient:4.3')
-	testCompile('net.sourceforge.htmlunit:htmlunit:2.4')
+	testCompile('net.sourceforge.htmlunit:htmlunit:2.15')
     testCompile('org.springframework.boot:spring-boot-starter-test')
 
    
