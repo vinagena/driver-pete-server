@@ -11,8 +11,8 @@ import org.springframework.context.annotation.Configuration;
 @ComponentScan
 public class StatelessAuthentication {
 
-//	public static void main(String[] args) {
-//		SpringApplication.run(StatelessAuthentication.class, args);
-//	}
+	public static void main(String[] args) {
+		SpringApplication.run(StatelessAuthentication.class, args);
+	}
 
 }
