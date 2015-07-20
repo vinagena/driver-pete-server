@@ -16,7 +16,8 @@ import org.apache.log4j.Logger;
 
 
 @Configuration
-//@PropertySource("classpath:social.properties")
+@PropertySource(value="classpath:social.properties",
+    ignoreResourceNotFound=true)
 class TestConfiguration {}
 
 

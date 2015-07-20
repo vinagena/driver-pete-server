@@ -17,7 +17,8 @@ import org.springframework.social.facebook.connect.FacebookConnectionFactory;
 
 @Configuration
 @EnableSocial
-@PropertySource("classpath:social.properties")
+@PropertySource(value="classpath:security.properties",
+    ignoreResourceNotFound=true)
 public class StatelessSocialConfig extends SocialConfigurerAdapter {
 
 	@Autowired
