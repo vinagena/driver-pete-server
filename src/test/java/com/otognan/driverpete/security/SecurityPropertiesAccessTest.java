@@ -12,9 +12,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import org.apache.log4j.Logger;
+
 
 @Configuration
-@PropertySource("classpath:social.properties")
+//@PropertySource("classpath:social.properties")
 class TestConfiguration {}
 
 
@@ -24,11 +26,15 @@ public class SecurityPropertiesAccessTest {
     
     @Autowired
     private ApplicationContext appContext;
+    
+    static Logger log = Logger.getLogger("TEST_LOGGER");
 
     @Test
     public void testSocialPropertyAccess() throws Exception {
-        String property = appContext.getEnvironment().getProperty("facebook.appKey");
-        assertNotNull(property);
+        String property = appContext.getEnvironment().getProperty("mycustomprop.x");
+        log.error("-------------------------------------");
+        log.error(property);
+        assertThat(property, equalTo("xxxxxxx"));
     }
     
 }
